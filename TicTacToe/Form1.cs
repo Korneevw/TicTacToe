@@ -2,6 +2,7 @@ namespace TicTacToe
 {
     public partial class Form1 : Form
     {
+        // Github, yay!
         private bool IsPlaying = true;
         private const int Indent = 10;
         private int _turn = 0;

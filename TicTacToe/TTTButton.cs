@@ -16,7 +16,7 @@
             set
             {
                 _symbol = value;
-                Text = value == Symbols.None ? "-" : value.ToString();
+                Text = value == Symbols.None ? "" : value.ToString();
             }
         }
     }

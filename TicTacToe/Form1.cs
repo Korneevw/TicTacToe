@@ -3,30 +3,87 @@ namespace TicTacToe
 {
     public partial class Form1 : Form
     {
+        private enum Language
+        {
+            English,
+            Russian
+        }
         private bool IsPlaying = true;
         private const int Indent = 4;
-        private int _turn = 0;
+        private Label _wins;
         private int _crossWins;
         private int _circleWins;
-        private int _fieldWidth = 3;
-        private int _fieldHeight = 3;
-        private Label _wins;
         private Label _currentTurn;
-        private Button _restart;
+        private int _turn = 0;
         private Label _sizeLabel;
         private NumericUpDown _fieldWidthInput;
+        private int _fieldWidth = 3;
         private NumericUpDown _fieldHeightInput;
+        private int _fieldHeight = 3;
         private Button _tttButtonPattern;
-        private Size _fieldSize;
         private TTTButton[,] _buttons = new TTTButton[0, 0];
+        private Size _fieldSize;
         private List<List<TTTButton>> _winCombinations = new List<List<TTTButton>>();
+        private Button _restart;
+        private string _dataFolderPath;
+        private string _dataFilePath;
+        private string _translationFolderPath;
+        private ListBox _languageSelector;
+        private Dictionary<string, string> _translation;
         public Form1()
+        {
+            _languageSelector = new ListBox()
+            {
+                Location = new Point(Indent, Indent),
+            };
+            _languageSelector.Items.Add("English");
+            _languageSelector.Items.Add("Русский");
+            _languageSelector.SelectedItem = _languageSelector.Items[0];
+            _languageSelector.Height = _languageSelector.Items.Count * _languageSelector.Font.Height + Indent;
+            _languageSelector.SelectedValueChanged += UpdateTranslation;
+            Controls.Add(_languageSelector);
+            GetDataPaths();
+            SetTranslation();
+            CreateControls();
+            SetFormSettings();
+            DoStartupActions();
+        }
+        private void SetTranslation()
+        {
+            switch (_languageSelector.SelectedItem)
+            {
+                case "Русский":
+                    _translation = GetTranslation(Language.Russian);
+                    break;
+                case "English":
+                    _translation = GetTranslation(Language.English);
+                    break;
+            }
+        }
+        private void UpdateTranslation(object? sender, EventArgs e)
+        {
+            if (sender is ListBox)
+            {
+                SetTranslation();
+                _sizeLabel.Text = _translation["sizeLabel"];
+                UpdateWinsLabelText();
+                UpdateCurrentTurnLabelText();
+                _restart.Text = _translation["restartButtonText"];
+            }
+        }
+        private void GetDataPaths()
+        {
+            _dataFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data"); // BaseDirectory gets directory the .exe is in
+            _dataFilePath = Path.Combine(_dataFolderPath, "wins.txt");
+            _translationFolderPath = Path.Combine(_dataFolderPath, "Translations");
+        }
+        private void CreateControls()
         {
             _sizeLabel = new Label()
             {
-                Text = "Field size (width, height):",
+                Text = _translation["sizeLabel"],
                 Height = Font.Height + 2,
-                Location = new Point(Indent, Indent),
+                Location = new Point(_languageSelector.Left, _languageSelector.Bottom - 3),
                 BorderStyle = BorderStyle.FixedSingle,
             };
             _fieldWidthInput = new NumericUpDown()
@@ -45,7 +102,6 @@ namespace TicTacToe
                 Location = new Point(_fieldWidthInput.Right, _fieldWidthInput.Top),
             };
             _fieldHeightInput.ValueChanged += FieldHeightChanged;
-
             _tttButtonPattern = new Button()
             {
                 Size = new Size(50, 50),
@@ -53,28 +109,27 @@ namespace TicTacToe
             };
             _wins = new Label()
             {
-                Text = $"Game hasn't started yet.\n ",
+                Text = _translation["winsLabelDefault"],
                 Height = Font.Height * 2 + 2,
                 Location = new Point(_sizeLabel.Left, _fieldWidthInput.Bottom - 1),
-                BorderStyle = BorderStyle.FixedSingle,       
+                BorderStyle = BorderStyle.FixedSingle,
             };
             _currentTurn = new Label()
             {
-                Text = $"Game hasn't started yet.\n ",
+                Text = _translation["currentTurnLabelDefault"],
                 Height = Font.Height + 2,
                 Location = new Point(_wins.Left, _wins.Bottom - 1),
                 BorderStyle = BorderStyle.FixedSingle,
             };
             CreateField(new Point(Indent, _currentTurn.Bottom), _tttButtonPattern, out _fieldSize);
-            UpdateFieldSizes();
+            UpdateControlSizes();
             _restart = new Button()
             {
-                Text = $"Restart",
+                Text = _translation["restartButtonText"],
                 Location = new Point(Indent, _buttons[0, _buttons.GetUpperBound(1)].Bottom),
                 Width = _wins.Width,
                 Height = _buttons[0, 0].Height
             };
-            
             _restart.Click += RestartButtonClick;
             Controls.Add(_wins);
             Controls.Add(_currentTurn);
@@ -83,17 +138,22 @@ namespace TicTacToe
             Controls.Add(_fieldWidthInput);
             Controls.Add(_fieldHeightInput);
             InitializeComponent();
-            Text = "TicTacToe";
+        }
+        private void SetFormSettings()
+        {
+            Text = _translation["appName"];
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        }
+        private void DoStartupActions()
+        {
             FillWinningCombinations();
             UpdateFieldSizeInputEnabled();
             UpdateRestartButtonEnabled();
-            CreateDataFile();
-            ReadDataFile();
+            ReadWinsFile();
             UpdateWinsLabelText();
             UpdateCurrentTurnLabelText();
         }
@@ -124,18 +184,6 @@ namespace TicTacToe
                     Controls.Add(_buttons[i, j]);
                     resultSize = new Size(pattern.Width * (i + 1), pattern.Height * (i + 1));
                 }
-            }
-        }
-        private void TTTButtonClick(object? sender, EventArgs e)
-        {
-            if (!IsPlaying ) return;
-            if (sender is TTTButton castedSender)
-            {
-                if (castedSender.Symbol != TTTButton.Symbols.None) return;
-                castedSender.Symbol = _turn % 2 == 0 ? TTTButton.Symbols.X : TTTButton.Symbols.O;
-                _turn++;
-                CheckWin();
-                UpdateCurrentTurnLabelText();
             }
         }
         private void FillWinningCombinations()
@@ -175,6 +223,18 @@ namespace TicTacToe
                 _winCombinations.Add(rightDiagonal);
             }
         }
+        private void TTTButtonClick(object? sender, EventArgs e)
+        {
+            if (!IsPlaying ) return;
+            if (sender is TTTButton castedSender)
+            {
+                if (castedSender.Symbol != TTTButton.Symbols.None) return;
+                castedSender.Symbol = _turn % 2 == 0 ? TTTButton.Symbols.X : TTTButton.Symbols.O;
+                _turn++;
+                CheckWin();
+                UpdateCurrentTurnLabelText();
+            }
+        }
         private void CheckWin()
         {
             foreach (List<TTTButton> combination in _winCombinations)
@@ -203,7 +263,7 @@ namespace TicTacToe
             UpdateRestartButtonEnabled();
             UpdateFieldSizeInputEnabled();
             UpdateWinsLabelText();
-            WriteDataFile();
+            WriteWinsFile();
         }
         private void EndGame(List<TTTButton> winningCombination)
         {
@@ -212,7 +272,7 @@ namespace TicTacToe
             UpdateRestartButtonEnabled();
             UpdateFieldSizeInputEnabled();
             UpdateWinsLabelText();
-            WriteDataFile();
+            WriteWinsFile();
         }
         private void StartGame()
         {
@@ -221,9 +281,19 @@ namespace TicTacToe
             UpdateRestartButtonPosSize();
             UpdateFieldSizeInputEnabled();
             UpdateRestartButtonEnabled();
-            UpdateFieldSizes();
+            UpdateControlSizes();
             UpdateWinsLabelText();
             UpdateCurrentTurnLabelText();
+        }
+        private void UpdateRestartButtonEnabled()
+        {
+            if (IsPlaying) _restart.Enabled = false;
+            else _restart.Enabled = true;
+        }
+        private void UpdateRestartButtonPosSize()
+        {
+            _restart.Location = new Point(_buttons[0, _buttons.GetUpperBound(1)].Left, _buttons[0, _buttons.GetUpperBound(1)].Bottom);
+            _restart.Width = _fieldSize.Width;
         }
         private void RestartButtonClick(object? sender, EventArgs e)
         {
@@ -236,39 +306,6 @@ namespace TicTacToe
                 }
                 IsPlaying = true;
                 StartGame();
-            }
-        }
-        private void UpdateRestartButtonEnabled()
-        {
-            if (IsPlaying) _restart.Enabled = false;
-            else _restart.Enabled = true;
-        }
-        private void UpdateRestartButtonPosSize()
-        {
-            _restart.Location = new Point(_buttons[0, _buttons.GetUpperBound(1)].Left, _buttons[0, _buttons.GetUpperBound(1)].Bottom);
-            _restart.Width = _fieldSize.Width;
-        }
-        private void UpdateFieldSizes()
-        {
-            _sizeLabel.Width = _fieldSize.Width;
-            _fieldWidthInput.Width = _sizeLabel.Width / 2;
-            _fieldHeightInput.Width = _sizeLabel.Width / 2;
-            _fieldHeightInput.Location = new Point(_fieldWidthInput.Right, _fieldWidthInput.Top);
-            _wins.Width = _sizeLabel.Width;
-            _currentTurn.Width = _wins.Width;
-        }
-        private void FieldWidthChanged(object? sender, EventArgs e)
-        {
-            if (sender is NumericUpDown castedSender)
-            {
-                _fieldWidth = (int)castedSender.Value;
-            }
-        }
-        private void FieldHeightChanged(object? sender, EventArgs e)
-        {
-            if (sender is NumericUpDown castedSender)
-            {
-                _fieldHeight = (int)castedSender.Value;
             }
         }
         private void UpdateFieldSizeInputEnabled()
@@ -284,42 +321,63 @@ namespace TicTacToe
                 _fieldHeightInput.Enabled = true;
             }
         }
-        private void UpdateCurrentTurnLabelText()
+        private void FieldWidthChanged(object? sender, EventArgs e)
         {
-            _currentTurn.Text = $"Now it's " + (_turn % 2 == 0 ? "cross" : "circle") + "'s turn.";
+            if (sender is NumericUpDown castedSender)
+            {
+                _fieldWidth = (int)castedSender.Value;
+            }
+        }
+        private void FieldHeightChanged(object? sender, EventArgs e)
+        {
+            if (sender is NumericUpDown castedSender)
+            {
+                _fieldHeight = (int)castedSender.Value;
+            }
+        }
+        private void UpdateControlSizes()
+        {
+            _languageSelector.Width = _fieldSize.Width;
+            _sizeLabel.Width = _languageSelector.Width;
+            _fieldWidthInput.Width = _sizeLabel.Width / 2;
+            _fieldHeightInput.Width = _sizeLabel.Width / 2;
+            _fieldHeightInput.Location = new Point(_fieldWidthInput.Right, _fieldWidthInput.Top);
+            _wins.Width = _sizeLabel.Width;
+            _currentTurn.Width = _wins.Width;
         }
         private void UpdateWinsLabelText()
         {
-            _wins.Text = $"Cross wins: {_crossWins}. \nCircle wins: {_circleWins}.";
+            _wins.Text =
+                _translation["winsLabelCrossWins"] + _crossWins + '\n'
+                + _translation["winsLabelCircleWins"] + _circleWins;
         }
-        private void CreateDataFile()
+        private void UpdateCurrentTurnLabelText()
         {
-            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TicTacToeData")))
-            {
-                Directory.CreateDirectory(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TicTacToeData"));
-            }
-            if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"TicTacToeData/TicTacToeData.txt")))
-            {
-                File.Create(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"TicTacToeData/TicTacToeData.txt")).Close();
-            }
+            _currentTurn.Text =
+                _translation["currentTurnLabelPreValue"]
+                + (_turn % 2 == 0 ? _translation["cross"] : _translation["circle"])
+                + _translation["currentTurnLabelAfterValue"];
         }
-        private void ReadDataFile()
+        private void ReadWinsFile()
         {
-            string[] data = File.ReadAllLines(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"TicTacToeData/TicTacToeData.txt"));
+            string[] data = File.ReadAllLines(_dataFilePath);
             if (data.Length == 2)
             {
                 _crossWins = int.Parse(data[0]);
                 _circleWins = int.Parse(data[1]);
             }
         }
-        private void WriteDataFile()
+        private void WriteWinsFile()
         {
             string[] data = new string[] { _crossWins.ToString(), _circleWins.ToString() };
-            File.WriteAllLines(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"TicTacToeData/TicTacToeData.txt"), data);
+            File.WriteAllLines(_dataFilePath, data);
+        }
+        private Dictionary<string, string> GetTranslation(Language language)
+        {
+            return File
+                    .ReadAllLines(Path.Combine(_translationFolderPath, $"{language}.txt")) // Read lines of type: Key Value
+                    .Select(l => l.Split('|')) // Split lines into { Key, Value }
+                    .ToDictionary(splitL => splitL[0], splitL => splitL[1]); // Create elements from { Key, Value }
         }
     }
 }

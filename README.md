@@ -6,5 +6,6 @@ TicTacToe. That's it.
 3. Win count display.  
 4. Winning combination is highlighted upon win.  
 5. Current turn display.  
-6. Wins are saved into a save .txt file (and read from) located in Documents/TicTacToeData, first line stands for cross wins, so the second's for circle wins.  
-approx. 300 lines.
+6. Saved wins.  
+7. Translations, extendable (russian and english available atm)  
+approx. 400 lines.

@@ -1,5 +1,4 @@
-# TicTacToe
-TicTacToe. That's it.  
+## TicTacToe
 # Features:  
 - Intuitive GUI
 - Game field of customizable size, up to 12x12. Field may not be a square

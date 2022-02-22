@@ -20,6 +20,6 @@ TicTacToe. That's it.
 - Export/Import wins
 # May come some time in the future:
 - AI
-- Selectable combinations
+- Selectable win combinations
 - Non-rectangular maps
 - Scalable GUI (probably not coming, like 99%)

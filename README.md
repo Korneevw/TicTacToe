@@ -25,3 +25,5 @@
 - Selectable win combinations
 - Non-rectangular maps
 - Scalable GUI (probably not coming, like 99%)
+# Instalation
+Just download, unpack the zip in some folder, and start the .exe. You may create a shortcut for convenience.

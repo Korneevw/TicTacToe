@@ -15,6 +15,7 @@
 - Easily extendable and editable translations, stored in .txt's
 - The app consists of a single .exe, with Data folder for... data
 ## Coming in future updates:
+- Draw
 - More than 2 symbols (players)
 - Customizable symbols
 - Color schemes

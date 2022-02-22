@@ -1,5 +1,5 @@
-## TicTacToe
-# Features:  
+# TicTacToe
+## Features:  
 - Intuitive GUI
 - Game field of customizable size, up to 12x12. Field may not be a square
 - Win combinations are generated via field size, diagonals are not included if field is not a square
@@ -12,12 +12,12 @@
 - Two languages (translations), can be easily extended
 - Easily extendable and editable translations, stored in .txt's
 - The app consists of a single .exe, with Data folder for... data
-# Coming in future updates:
+## Coming in future updates:
 - More than 2 symbols (players)
 - Customizable symbols
 - Color schemes
 - Export/Import wins
-# May come some time in the future:
+## May come some time in the future:
 - AI
 - Selectable win combinations
 - Non-rectangular maps

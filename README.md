@@ -1,11 +1,25 @@
 # TicTacToe
 TicTacToe. That's it.  
 # Features:  
-1. Two symbols, a circle and a cross.  
-2. Game field of customizable size, up to 12x12, field may not be a square.  
-3. Win count display.  
-4. Winning combination is highlighted upon win.  
-5. Current turn display.  
-6. Saved wins.  
-7. Translations, extendable (russian and english available atm)  
-approx. 400 lines.
+- Intuitive GUI
+- Game field of customizable size, up to 12x12. Field may not be a square
+- Win combinations are generated via field size, diagonals are not included if field is not a square
+- Wins are displayed
+- Win counting
+- Wins are saved into a file
+- Wins can be reset with a button
+- Upon winning the combination that won is highlighted with red
+- Current turn is displayed
+- Two languages (translations), can be easily extended
+- Easily extendable and editable translations, stored in .txt's
+- The app consists of a single .exe, with Data folder for... data
+# Coming in future updates:
+- More than 2 symbols (players)
+- Customizable symbols
+- Color schemes
+- Export/Import wins
+# May come some time in the future:
+- AI
+- Selectable combinations
+- Non-rectangular maps
+- Scalable GUI (probably not coming, like 99%)

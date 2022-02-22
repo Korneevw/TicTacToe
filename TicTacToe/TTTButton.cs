@@ -9,7 +9,6 @@
             None
         }
         private Symbols _symbol;
-        public (int, int) pos;
         public Symbols Symbol
         {
             get { return _symbol; }

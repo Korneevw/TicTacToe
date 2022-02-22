@@ -9,7 +9,13 @@ namespace TicTacToe
         static void Main()
         {
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+            if (!Directory.Exists(MainForm.DataFolderPath) || !Directory.Exists(MainForm.TranslationFolderPath) || !File.Exists(MainForm.WinsFilePath)
+                || Directory.GetFiles(MainForm.TranslationFolderPath).Length < Enum.GetNames(typeof(MainForm.Language)).Length)
+            {
+                MessageBox.Show("Required translation or wins files are not found, try reinstalling the app.", "Files not found");
+                return;
+            }
+            Application.Run(new MainForm());
         }
     }
 }

@@ -25,5 +25,6 @@
 - Selectable win combinations
 - Non-rectangular maps
 # Instalation
-Just download, unpack the zip in some folder, and start the .exe. You may create a shortcut for convenience.  
+Just download, unpack the zip in some folder, and start the .exe.  
+Make sure the .exe you're launching is in the same folder as Data, or it'll not find the required files. You may create a shortcut for convenience.   
 Windows SmartScreen may warn you, but i don't yet know how to fix that.

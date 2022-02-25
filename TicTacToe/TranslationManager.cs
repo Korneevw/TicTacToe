@@ -17,15 +17,16 @@ namespace TicTacToe
         public enum TranslatableText
         {
             FieldSizeLabel,
-            WinsLabelDefault,
             WinsLabelCrossWins,
             WinsLabelCircleWins,
+            WinsLabelDraws,
             CurrentTurnLabelDefault,
             Cross,
             Circle,
             CurrentTurnLabelPreValue,
             CurrentTurnLabelAfterValue,
-            RestartButton,
+            StartEndButtonStart,
+            StartEndButtonEnd,
             ResetWinsButton,
             MainFormName,
         }
@@ -47,31 +48,46 @@ namespace TicTacToe
         public static void UpdateAllText()
         {
             MainForm.FieldSizeLabel.Text = Translation[TranslatableText.FieldSizeLabel];
-            MainForm.WinsLabel.Text =
-                Translation[TranslatableText.WinsLabelCrossWins] + MainForm.CrossWins + '\n'
-                + Translation[TranslatableText.WinsLabelCircleWins] + MainForm.CircleWins;
-            MainForm.CurrentTurnLabel.Text =
-                Translation[TranslatableText.CurrentTurnLabelPreValue]
-                + (MainForm.Turn % 2 == 0 ? Translation[TranslatableText.Cross] : Translation[TranslatableText.Circle])
-                + Translation[TranslatableText.CurrentTurnLabelAfterValue];
-            MainForm.RestartButton.Text = Translation[TranslatableText.RestartButton];
+            UpdateWinsLabelText();
+            UpdateCurrentTurnLabelText();
+            UpdateStartEndButtonText();
             MainForm.ResetWinsButton.Text = Translation[TranslatableText.ResetWinsButton];
             MainForm.Text = Translation[TranslatableText.MainFormName];
         }
         /// <summary>Updates only the WinsLabel's text according to the translation.</summary>
-        public static void UpdateWinsLabel()
+        public static void UpdateWinsLabelText()
         {
             MainForm.WinsLabel.Text =
                 Translation[TranslatableText.WinsLabelCrossWins] + MainForm.CrossWins + '\n'
-                + Translation[TranslatableText.WinsLabelCircleWins] + MainForm.CircleWins;
+                + Translation[TranslatableText.WinsLabelCircleWins] + MainForm.CircleWins + '\n'
+                + Translation[TranslatableText.WinsLabelDraws] + MainForm.Draws;
         }
-        /// <summary>Updates only the CurrentTurnLabel's text accroding to the translation</summary>
-        public static void UpdateCurrentTurnLabel()
+        /// <summary>Updates only the CurrentTurnLabel's text accroding to the translation and playing state.</summary>
+        public static void UpdateCurrentTurnLabelText()
         {
-            MainForm.CurrentTurnLabel.Text =
-                Translation[TranslatableText.CurrentTurnLabelPreValue]
-                + (MainForm.Turn % 2 == 0 ? Translation[TranslatableText.Cross] : Translation[TranslatableText.Circle])
-                + Translation[TranslatableText.CurrentTurnLabelAfterValue];
+            if (!MainForm.IsPlaying)
+            {
+                MainForm.CurrentTurnLabel.Text = Translation[TranslatableText.CurrentTurnLabelDefault];
+            }
+            else if (MainForm.IsPlaying)
+            {
+                MainForm.CurrentTurnLabel.Text =
+                     Translation[TranslatableText.CurrentTurnLabelPreValue]
+                     + (MainForm.Turn % 2 == 0 ? Translation[TranslatableText.Cross] : Translation[TranslatableText.Circle])
+                     + Translation[TranslatableText.CurrentTurnLabelAfterValue];
+            }
+        }
+        /// <summary>If playing, sets end, if not playing, sets start, according to the translation.</summary>
+        public static void UpdateStartEndButtonText()
+        {
+            if (MainForm.IsPlaying)
+            {
+                MainForm.StartEndButton.Text = Translation[TranslatableText.StartEndButtonEnd];
+            }
+            else if (!MainForm.IsPlaying)
+            {
+                MainForm.StartEndButton.Text = Translation[TranslatableText.StartEndButtonStart];
+            }
         }
     }
 }

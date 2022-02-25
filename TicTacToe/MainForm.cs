@@ -8,21 +8,22 @@ namespace TicTacToe
         public static Label WinsLabel { get; set; }
         public static Label CurrentTurnLabel { get; set; }
         public static Label FieldSizeLabel { get; set; }
-        public static Button RestartButton { get; set; }
+        public static Button StartEndButton { get; set; }
         public static Button ResetWinsButton { get; set; }
         public static ListBox LanguageSelector { get; set; }
         new public static string Text { get; set; }
         public static int CrossWins { get; set; }
         public static int CircleWins { get; set; }
+        public static int Draws { get; set; }
         public static int Turn { get; private set; } = 0;
-        private bool IsPlaying = true;
+        public static bool IsPlaying { get; private set; } = false;
         private int _fieldWidth = 3;
         private int _fieldHeight = 3;
         private Size _createdFieldSize;
         private NumericUpDown _fieldWidthInput;
         private NumericUpDown _fieldHeightInput;
         private TTTButton _tttButtonPattern;
-        private TTTButton[,] _buttons = new TTTButton[0, 0];
+        private TTTButton[,] _field = new TTTButton[0, 0];
         private List<List<TTTButton>> _winCombinations = new List<List<TTTButton>>();
         public MainForm()
         {
@@ -39,8 +40,15 @@ namespace TicTacToe
             TranslationManager.GetTranslation();
             CreateControls();
             TranslationManager.UpdateAllText();
-            SetFormSettings();
-            DoStartupActions();
+            Text = TranslationManager.Translation[TranslationManager.TranslatableText.MainFormName];
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.AutoSize = true;
+            this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            FileManager.ReadWinsFile();
+            TranslationManager.UpdateWinsLabelText();
+            TranslationManager.UpdateCurrentTurnLabelText();
         }
         private void LanguageSelectorSelectedValueChanged(object? sender, EventArgs e)
         {
@@ -64,7 +72,7 @@ namespace TicTacToe
                 Value = 3,
                 Location = new Point(FieldSizeLabel.Left, FieldSizeLabel.Bottom - 1),
             };
-            _fieldWidthInput.ValueChanged += FieldWidthChanged;
+            _fieldWidthInput.ValueChanged += FieldWidthInputValueChanged;
             _fieldHeightInput = new NumericUpDown()
             {
                 Maximum = 12,
@@ -72,7 +80,7 @@ namespace TicTacToe
                 Value = 3,
                 Location = new Point(_fieldWidthInput.Right, _fieldWidthInput.Top),
             };
-            _fieldHeightInput.ValueChanged += FieldHeightChanged;
+            _fieldHeightInput.ValueChanged += FieldHeightInputValueChanged;
             _tttButtonPattern = new TTTButton()
             {
                 Size = new Size(50, 50),
@@ -81,15 +89,13 @@ namespace TicTacToe
             };
             WinsLabel = new Label() // Displays the wins.
             {
-                Text = TranslationManager.Translation[TranslationManager.TranslatableText.WinsLabelDefault],
-                Height = Font.Height * 2 + 2,
+                Height = Font.Height * 3 + 2,
                 Location = new Point(FieldSizeLabel.Left, _fieldWidthInput.Bottom - 1),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
             };
             CurrentTurnLabel = new Label() // Displays the current turn.
             {
-                Text = TranslationManager.Translation[TranslationManager.TranslatableText.CurrentTurnLabelDefault],
                 Height = Font.Height + 2,
                 Location = new Point(WinsLabel.Left, WinsLabel.Bottom - 1),
                 BorderStyle = BorderStyle.FixedSingle,
@@ -97,25 +103,25 @@ namespace TicTacToe
             };
             CreateField(new Point(Indent, CurrentTurnLabel.Bottom), _tttButtonPattern, out _createdFieldSize);
             UpdateControlSizes();
-            RestartButton = new Button() // Restarts the game (clears the field).
+            StartEndButton = new Button() // Restarts the game (clears the field).
             {
-                Text = TranslationManager.Translation[TranslationManager.TranslatableText.RestartButton],
-                Location = new Point(_buttons[0, _buttons.GetUpperBound(1)].Left, _buttons[0, _buttons.GetUpperBound(1)].Bottom),
+                Text = TranslationManager.Translation[TranslationManager.TranslatableText.StartEndButtonStart],
+                Location = new Point(_field[0, _field.GetUpperBound(1)].Left, _field[0, _field.GetUpperBound(1)].Bottom),
                 Width = _createdFieldSize.Width,
-                Height = _buttons[0, 0].Height,
+                Height = _field[0, 0].Height,
                 BackColor = Color.White,
             };
-            RestartButton.Click += RestartButtonClick;
-            ResetWinsButton= new Button() // Resets the wins file.
+            StartEndButton.Click += EndStartButtonClick;
+            ResetWinsButton = new Button() // Resets the wins file.
             {
-                Text = TranslationManager.Translation[TranslationManager.TranslatableText.RestartButton],
-                Location = new Point(RestartButton.Left, RestartButton.Bottom),
-                Width = RestartButton.Width,
-                Height = _buttons[0, 0].Height / 2,
+                Text = TranslationManager.Translation[TranslationManager.TranslatableText.StartEndButtonStart],
+                Location = new Point(StartEndButton.Left, StartEndButton.Bottom),
+                Width = StartEndButton.Width,
+                Height = _field[0, 0].Height / 2,
                 BackColor = Color.White,
             };
             ResetWinsButton.Click += ResetWinsButtonClick;
-            Controls.AddRange(new Control[] { FieldSizeLabel, _fieldWidthInput, _fieldHeightInput, WinsLabel, CurrentTurnLabel, RestartButton, ResetWinsButton });
+            Controls.AddRange(new Control[] { FieldSizeLabel, _fieldWidthInput, _fieldHeightInput, WinsLabel, CurrentTurnLabel, StartEndButton, ResetWinsButton });
             InitializeComponent();
         }
         /// <summary>Creates TTTButtons for the field.</summary>
@@ -124,20 +130,20 @@ namespace TicTacToe
         /// <param name="resultSize">Size of the created field.</param>
         private void CreateField(Point startingPoint, TTTButton pattern, out Size resultSize)
         {
-            if (_buttons is not null)
+            if (_field is not null)
             {
-                foreach (TTTButton b in _buttons)
+                foreach (TTTButton b in _field)
                 {
                     Controls.Remove(b);
                 }
             }
-            _buttons = new TTTButton[_fieldWidth, _fieldHeight];
+            _field = new TTTButton[_fieldWidth, _fieldHeight];
             resultSize = new Size(0, 0);
-            for (int i = 0; i <= _buttons.GetUpperBound(0); i++)
+            for (int i = 0; i <= _field.GetUpperBound(0); i++)
             {
-                for (int j = 0; j <= _buttons.GetUpperBound(1); j++)
+                for (int j = 0; j <= _field.GetUpperBound(1); j++)
                 {
-                    _buttons[i, j] = new TTTButton()
+                    _field[i, j] = new TTTButton()
                     {
                         Size = pattern.Size,
                         Font = pattern.Font,
@@ -145,8 +151,8 @@ namespace TicTacToe
                         Symbol = TTTButton.Symbols.None,
                         Location = new Point(startingPoint.X + pattern.Width * i, startingPoint.Y + pattern.Height * j),
                     };
-                    _buttons[i, j].Click += TTTButtonClick;
-                    Controls.Add(_buttons[i, j]);
+                    _field[i, j].Click += TTTButtonClick;
+                    Controls.Add(_field[i, j]);
                     resultSize = new Size(pattern.Width * (i + 1), pattern.Height * (i + 1));
                 }
             }
@@ -154,36 +160,36 @@ namespace TicTacToe
         private void CreateWinningCombinations()
         {
             if (_winCombinations.Any()) _winCombinations.Clear();
-            for (int i = 0; i <= _buttons.GetUpperBound(1); i++) // Horizontal.
+            for (int i = 0; i <= _field.GetUpperBound(1); i++) // Horizontal.
             {
                 List<TTTButton> horizontal = new List<TTTButton>();
-                for (int j = 0; j <= _buttons.GetUpperBound(0); j++)
+                for (int j = 0; j <= _field.GetUpperBound(0); j++)
                 {
-                    horizontal.Add(_buttons[j, i]);
+                    horizontal.Add(_field[j, i]);
                 }
                 _winCombinations.Add(horizontal);
             }
-            for (int i = 0; i <= _buttons.GetUpperBound(0); i++) // Vertical.
+            for (int i = 0; i <= _field.GetUpperBound(0); i++) // Vertical.
             {
                 List<TTTButton> vertical = new List<TTTButton>();
-                for (int j = 0; j <= _buttons.GetUpperBound(1); j++)
+                for (int j = 0; j <= _field.GetUpperBound(1); j++)
                 {
-                    vertical.Add(_buttons[i, j]);
+                    vertical.Add(_field[i, j]);
                 }
                 _winCombinations.Add(vertical);
             }
-            if (_buttons.GetLength(0) == _buttons.GetLength(1)) // If field is a square:
+            if (_field.GetLength(0) == _field.GetLength(1)) // If field is a square:
             {
                 List<TTTButton> leftDiagonal = new List<TTTButton>();
-                for (int i = 0; i < Math.Sqrt(_buttons.Length); i++) // Left diagonal.
+                for (int i = 0; i < Math.Sqrt(_field.Length); i++) // Left diagonal.
                 {
-                    leftDiagonal.Add(_buttons[i, i]);
+                    leftDiagonal.Add(_field[i, i]);
                 }
                 _winCombinations.Add(leftDiagonal);
                 List<TTTButton> rightDiagonal = new List<TTTButton>();
-                for (int i = 0; i < Math.Sqrt(_buttons.Length); i++) // Right diagonal.
+                for (int i = 0; i < Math.Sqrt(_field.Length); i++) // Right diagonal.
                 {
-                    rightDiagonal.Add(_buttons[i, (int)Math.Sqrt(_buttons.Length) - 1 - i]);
+                    rightDiagonal.Add(_field[i, (int)Math.Sqrt(_field.Length) - 1 - i]);
                 }
                 _winCombinations.Add(rightDiagonal);
             }
@@ -199,28 +205,9 @@ namespace TicTacToe
                 if (castedSender.Symbol != TTTButton.Symbols.None) return;
                 castedSender.Symbol = Turn % 2 == 0 ? TTTButton.Symbols.X : TTTButton.Symbols.O;
                 Turn++;
+                TranslationManager.UpdateCurrentTurnLabelText();
                 CheckWin();
-                TranslationManager.UpdateCurrentTurnLabel();
             }
-        }
-        private void SetFormSettings()
-        {
-            Text = TranslationManager.Translation[TranslationManager.TranslatableText.MainFormName];
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox = false;
-            MinimizeBox = false;
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        }
-        private void DoStartupActions()
-        {
-            CreateWinningCombinations();
-            UpdateFieldSizeInputEnabled();
-            UpdateRestartButtonEnabled();
-            UpdateResetWinsButtonEnabled();
-            FileManager.ReadWinsFile();
-            TranslationManager.UpdateWinsLabel();
-            TranslationManager.UpdateCurrentTurnLabel();
         }
         private void CheckWin()
         {
@@ -241,76 +228,49 @@ namespace TicTacToe
             }
             if (_winCombinations.All(c => c.All(b => b.Symbol != TTTButton.Symbols.None))) // If the whole field is filled:
             {
+                Draws++;
                 EndGame();
             }
         }
         private void StartGame()
         {
+            IsPlaying = true;
             CreateField(new Point(Indent, CurrentTurnLabel.Bottom), _tttButtonPattern, out _createdFieldSize);
-            CreateWinningCombinations();
-            UpdateRestartButtonPosSize();
-            UpdateResetWinsButtonPosSize();
-            UpdateFieldSizeInputEnabled();
-            UpdateRestartButtonEnabled();
-            UpdateResetWinsButtonEnabled();
             UpdateControlSizes();
-            TranslationManager.UpdateWinsLabel();
-            TranslationManager.UpdateCurrentTurnLabel();
+            AlignRestartResetButtons();
+            CreateWinningCombinations();
+            _fieldHeightInput.Enabled = false;
+            _fieldWidthInput.Enabled = false;
+            ResetWinsButton.Enabled = false;
+            TranslationManager.UpdateWinsLabelText();
+            TranslationManager.UpdateCurrentTurnLabelText();
+            TranslationManager.UpdateStartEndButtonText();
         }
         private void EndGame()
         {
             IsPlaying = false;
-            UpdateRestartButtonEnabled();
-            UpdateResetWinsButtonEnabled();
-            UpdateFieldSizeInputEnabled();
-            TranslationManager.UpdateWinsLabel();
-            FileManager.WriteWinsFile(CrossWins, CircleWins);
+            StartEndButton.Enabled = true;
+            ResetWinsButton.Enabled = true;
+            _fieldHeightInput.Enabled = true;
+            _fieldWidthInput.Enabled = true;
+            TranslationManager.UpdateWinsLabelText();
+            FileManager.WriteWinsFile();
+            TranslationManager.UpdateCurrentTurnLabelText();
+            TranslationManager.UpdateStartEndButtonText();
         }
         /// <summary>Ends the game, and highlights the <paramref name="winningCombination"/>.</summary>
         private void EndGame(List<TTTButton> winningCombination)
         {
             winningCombination.ForEach(b => b.ForeColor = Color.Red);
             IsPlaying = false;
-            UpdateRestartButtonEnabled();
-            UpdateResetWinsButtonEnabled();
-            UpdateFieldSizeInputEnabled();
-            TranslationManager.UpdateWinsLabel();
-            FileManager.WriteWinsFile(CrossWins, CircleWins);
-        }
-        private void UpdateFieldSizeInputEnabled()
-        {
-            if (IsPlaying)
-            {
-                _fieldWidthInput.Enabled = false;
-                _fieldHeightInput.Enabled = false;
-            }
-            else
-            {
-                _fieldWidthInput.Enabled = true;
-                _fieldHeightInput.Enabled = true;
-            }
-        }
-        private void UpdateRestartButtonEnabled()
-        {
-            if (IsPlaying)
-            {
-                RestartButton.Enabled = false;
-            }
-            else
-            {
-                RestartButton.Enabled = true;
-            }
-        }
-        private void UpdateResetWinsButtonEnabled()
-        {
-            if (IsPlaying)
-            {
-                ResetWinsButton.Enabled = false;
-            }
-            else
-            {
-                ResetWinsButton.Enabled = true;
-            }
+            StartEndButton.Enabled = true;
+            ResetWinsButton.Enabled = true;
+            _fieldHeightInput.Enabled = true;
+            _fieldWidthInput.Enabled = true;
+            TranslationManager.UpdateWinsLabelText();
+            FileManager.WriteWinsFile();
+            TranslationManager.UpdateCurrentTurnLabelText();
+            TranslationManager.UpdateStartEndButtonText();
         }
         /// <summary>Scales all controls to created field size.</summary>
         private void UpdateControlSizes()
@@ -323,26 +283,28 @@ namespace TicTacToe
             WinsLabel.Width = FieldSizeLabel.Width;
             CurrentTurnLabel.Width = WinsLabel.Width;
         }
-        private void UpdateRestartButtonPosSize()
+        /// <summary>Aligns startEnd and reset buttons according to created field size.</summary>
+        private void AlignRestartResetButtons()
         {
-            RestartButton.Location = new Point(_buttons[0, _buttons.GetUpperBound(1)].Left, _buttons[0, _buttons.GetUpperBound(1)].Bottom);
-            RestartButton.Width = _createdFieldSize.Width;
-        }
-        private void UpdateResetWinsButtonPosSize()
-        {
-            ResetWinsButton.Location = new Point(RestartButton.Left, RestartButton.Bottom);
+            StartEndButton.Location = new Point(_field[0, _field.GetUpperBound(1)].Left, _field[0, _field.GetUpperBound(1)].Bottom);
+            StartEndButton.Width = _createdFieldSize.Width;
+            ResetWinsButton.Location = new Point(StartEndButton.Left, StartEndButton.Bottom);
             ResetWinsButton.Width = _createdFieldSize.Width;
         }
-        private void RestartButtonClick(object? sender, EventArgs e)
+        /// <summary>Ends the game if playing. Starts the game if not playing.</summary>
+        private void EndStartButtonClick(object? sender, EventArgs e)
         {
-            if (sender is Button)
+            if (IsPlaying)
             {
-                foreach (TTTButton button in _buttons)
+                foreach (TTTButton button in _field)
                 {
                     button.Symbol = TTTButton.Symbols.None;
                     button.ForeColor = Color.Black;
                 }
-                IsPlaying = true;
+                EndGame();
+            }
+            else if (!IsPlaying)
+            {
                 StartGame();
             }
         }
@@ -350,14 +312,14 @@ namespace TicTacToe
         {
             FileManager.ResetWinsFile();
         }
-        private void FieldWidthChanged(object? sender, EventArgs e)
+        private void FieldWidthInputValueChanged(object? sender, EventArgs e)
         {
             if (sender is NumericUpDown castedSender)
             {
                 _fieldWidth = (int)castedSender.Value;
             }
         }
-        private void FieldHeightChanged(object? sender, EventArgs e)
+        private void FieldHeightInputValueChanged(object? sender, EventArgs e)
         {
             if (sender is NumericUpDown castedSender)
             {

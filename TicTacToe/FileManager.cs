@@ -23,22 +23,23 @@ namespace TicTacToe
         public static void ReadWinsFile()
         {
             string[] winsData = File.ReadAllLines(WinsFilePath);
-            if (winsData.Length == 2) // If both circle and cross wins values exist
+            if (winsData.Length == 3) // If either circle, cross and draw wins values exist
             {
                 MainForm.CrossWins = int.Parse(winsData[0]);
                 MainForm.CircleWins = int.Parse(winsData[1]);
+                MainForm.Draws = int.Parse(winsData[2]);
             }
         }
-        public static void WriteWinsFile(int crossWins, int circleWins)
+        public static void WriteWinsFile()
         {
-            string[] data = new string[] { crossWins.ToString(), circleWins.ToString() };
+            string[] data = new string[] { MainForm.CrossWins.ToString(), MainForm.CircleWins.ToString(), MainForm.Draws.ToString() };
             File.WriteAllLines(WinsFilePath, data);
         }
         public static void ResetWinsFile()
         {
-            File.WriteAllLines(WinsFilePath, new string[] { "0", "0" }); // Set each value to 0
+            File.WriteAllLines(WinsFilePath, new string[] { "0", "0", "0" }); // Set each value to 0
             ReadWinsFile();
-            TranslationManager.UpdateWinsLabel();
+            TranslationManager.UpdateWinsLabelText();
         }
         /// <summary>Checks if all required files exist.</summary>
         /// <returns> <see cref="bool"/> describing whether all the files exist.</returns>

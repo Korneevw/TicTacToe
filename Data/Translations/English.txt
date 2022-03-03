@@ -1,0 +1,13 @@
+FieldSizeLabel|Field size (width, length):
+WinsLabelCrossWins|Cross wins: 
+WinsLabelCircleWins|Circle wins: 
+WinsLabelDraws|Draws: 
+CurrentTurnLabelDefault|Game hasn't started yet.
+Cross|cross
+Circle|circle
+CurrentTurnLabelPreValue|Now it's 
+CurrentTurnLabelAfterValue|'s turn.
+StartEndButtonStart|Start
+StartEndButtonEnd|End
+ResetWinsButton|Reset wins
+MainFormName|TicTacToe

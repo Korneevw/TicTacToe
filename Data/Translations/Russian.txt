@@ -1,0 +1,13 @@
+FieldSizeLabel|Размер поля (ш, в):
+WinsLabelCrossWins|Победы крестика: 
+WinsLabelCircleWins|Победы нолика: 
+WinsLabelDraws|Ничьи: 
+CurrentTurnLabelDefault|Игра ещё не началась.
+Cross|крестик
+Circle|нолик
+CurrentTurnLabelPreValue|Теперь ходит 
+CurrentTurnLabelAfterValue|.
+StartEndButtonStart|Начать
+StartEndButtonEnd|Закончить
+ResetWinsButton|Сбросить победы
+MainFormName|КрестикиНолики

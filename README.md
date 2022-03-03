@@ -1,4 +1,9 @@
 # TicTacToe
+# Instalation
+- If you want to open the project via Visual Studio, it will throw an error that says the files aren't found. To fix that, just place Data folder from the repository into bin/Debug/net6.0-windows/ (Built app location).
+- If you want to play it, just download, unpack the zip in some folder, and start the .exe.  
+Make sure the .exe you're launching is in the same folder as Data, or it'll not find the required files. You may create a shortcut for convenience.   
+Windows SmartScreen may warn you, but i don't yet know how to fix that.
 ## Features:  
 - Basic game mechanics
 - Intuitive GUI
@@ -24,7 +29,3 @@
 - AI
 - Selectable win combinations
 - Non-rectangular maps
-# Instalation
-Just download, unpack the zip in some folder, and start the .exe.  
-Make sure the .exe you're launching is in the same folder as Data, or it'll not find the required files. You may create a shortcut for convenience.   
-Windows SmartScreen may warn you, but i don't yet know how to fix that.

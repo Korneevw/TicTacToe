@@ -11,21 +11,13 @@ Windows SmartScreen may warn you, but i don't yet know how to fix that.
 - Win combinations are generated via field size, diagonals are not included if field is not a square
 - Wins are displayed
 - Win counting
+- Draws
 - Wins are saved into a file
 - Wins can be reset with a button
+- Wins can be exported/imported
 - Upon winning the combination that won is highlighted with red
 - Current turn is displayed
 - Reset field button
 - Two languages (translations), can be easily extended
 - Easily extendable and editable translations, stored in .txt's
 - The app consists of a single .exe, with Data folder for... data
-## Coming in future updates:
-- Draw
-- More than 2 symbols (players)
-- Customizable symbols
-- Color schemes
-- Export/Import wins
-## May come some time in the future:
-- AI
-- Selectable win combinations
-- Non-rectangular maps

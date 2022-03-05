@@ -10,4 +10,12 @@ CurrentTurnLabelAfterValue|'s turn.
 StartEndButtonStart|Start
 StartEndButtonEnd|End
 ResetWinsButton|Reset wins
+ImportWinsButton|Import wins
+ExportWinsButton|Export wins
+ReadWinsFailedMessage|Invalid wins file format. There must be 3 lines (for Cross, Circle, Draw), each containing only numbers.
+ReadWinsFailedHeading|Reading error
+ImportSuccesfulMessage|Wins succesfully imported!
+ImportSuccesfulHeading|Wins imported
+ExportSuccesfulMessage|Wins succesfully exported! Path: 
+ExportSuccesfulHeading|Wins exported
 MainFormName|TicTacToe

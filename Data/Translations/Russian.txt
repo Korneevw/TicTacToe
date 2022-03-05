@@ -10,4 +10,12 @@ CurrentTurnLabelAfterValue|.
 StartEndButtonStart|Начать
 StartEndButtonEnd|Закончить
 ResetWinsButton|Сбросить победы
+ImportWinsButton|Импорт побед
+ExportWinsButton|Экспорт побед
+ReadWinsFailedMessage|Неправильный формат файла побед. Должно быть три строки (для Крестика, Нолика, Ничьих), в каждой из которых только число.
+ReadWinsFailedHeading|Ошибка чтения
+ImportSuccesfulMessage|Победы успешно импортированы!
+ImportSuccesfulHeading|Победы импортированы
+ExportSuccesfulMessage|Победы успешно экспортированы! Путь: 
+ExportSuccesfulHeading|Победы экспортированы
 MainFormName|КрестикиНолики

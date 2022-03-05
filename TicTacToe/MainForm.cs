@@ -4,14 +4,17 @@ namespace TicTacToe
     /// <summary>The main game window.</summary>
     public partial class MainForm : Form
     {
+        public static bool Dev { get; } = true;
         private const int Indent = 4;
         public static Label WinsLabel { get; set; }
         public static Label CurrentTurnLabel { get; set; }
         public static Label FieldSizeLabel { get; set; }
         public static Button StartEndButton { get; set; }
         public static Button ResetWinsButton { get; set; }
+        public static Button ImportWinsButton { get; set; }
+        public static Button ExportWinsButton { get; set; }
         public static ListBox LanguageSelector { get; set; }
-        new public static string Text { get; set; }
+        public static ListBox ThemeSelector { get; set; }
         public static int CrossWins { get; set; }
         public static int CircleWins { get; set; }
         public static int Draws { get; set; }
@@ -30,6 +33,7 @@ namespace TicTacToe
             LanguageSelector = new ListBox()
             {
                 Location = new Point(Indent, Indent),
+                BorderStyle = BorderStyle.FixedSingle,
             };
             LanguageSelector.Items.Add("English");
             LanguageSelector.Items.Add("Русский");
@@ -40,7 +44,7 @@ namespace TicTacToe
             TranslationManager.GetTranslation();
             CreateControls();
             TranslationManager.UpdateAllText();
-            Text = TranslationManager.Translation[TranslationManager.TranslatableText.MainFormName];
+            this.Text = TranslationManager.Translation[TranslationManager.TranslatableText.MainFormName];
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -54,6 +58,7 @@ namespace TicTacToe
         {
             TranslationManager.GetTranslation();
             TranslationManager.UpdateAllText();
+            this.Text = TranslationManager.Translation[TranslationManager.TranslatableText.MainFormName];
         }
         private void CreateControls()
         {
@@ -61,10 +66,11 @@ namespace TicTacToe
             {
                 Text = TranslationManager.Translation[TranslationManager.TranslatableText.FieldSizeLabel],
                 Height = Font.Height + 2,
-                Location = new Point(LanguageSelector.Left, LanguageSelector.Bottom - 3),
+                Location = new Point(LanguageSelector.Left, LanguageSelector.Bottom - 5),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
             };
+            
             _fieldWidthInput = new NumericUpDown()
             {
                 Maximum = 12,
@@ -73,6 +79,7 @@ namespace TicTacToe
                 Location = new Point(FieldSizeLabel.Left, FieldSizeLabel.Bottom - 1),
             };
             _fieldWidthInput.ValueChanged += FieldWidthInputValueChanged;
+            
             _fieldHeightInput = new NumericUpDown()
             {
                 Maximum = 12,
@@ -81,47 +88,74 @@ namespace TicTacToe
                 Location = new Point(_fieldWidthInput.Right, _fieldWidthInput.Top),
             };
             _fieldHeightInput.ValueChanged += FieldHeightInputValueChanged;
+            
             _tttButtonPattern = new TTTButton()
             {
-                Size = new Size(50, 50),
-                Font = new Font("Arial", 10, FontStyle.Bold),
+                Size = new Size(75, 75),
+                Font = new Font("Arial", 35, FontStyle.Bold),
                 BackColor = Color.White,
             };
+
             WinsLabel = new Label() // Displays the wins.
             {
                 Height = Font.Height * 3 + 2,
-                Location = new Point(FieldSizeLabel.Left, _fieldWidthInput.Bottom - 1),
+                Location = new Point(LanguageSelector.Left, _fieldWidthInput.Bottom - 1),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
             };
+
             CurrentTurnLabel = new Label() // Displays the current turn.
             {
                 Height = Font.Height + 2,
-                Location = new Point(WinsLabel.Left, WinsLabel.Bottom - 1),
+                Location = new Point(LanguageSelector.Left, WinsLabel.Bottom - 1),
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = Color.White,
             };
             CreateField(new Point(Indent, CurrentTurnLabel.Bottom), _tttButtonPattern, out _createdFieldSize);
             UpdateControlSizes();
+
             StartEndButton = new Button() // Restarts the game (clears the field).
             {
                 Text = TranslationManager.Translation[TranslationManager.TranslatableText.StartEndButtonStart],
                 Location = new Point(_field[0, _field.GetUpperBound(1)].Left, _field[0, _field.GetUpperBound(1)].Bottom),
                 Width = _createdFieldSize.Width,
-                Height = _field[0, 0].Height,
+                Height = _tttButtonPattern.Height,
                 BackColor = Color.White,
             };
             StartEndButton.Click += EndStartButtonClick;
+
             ResetWinsButton = new Button() // Resets the wins file.
             {
                 Text = TranslationManager.Translation[TranslationManager.TranslatableText.StartEndButtonStart],
                 Location = new Point(StartEndButton.Left, StartEndButton.Bottom),
                 Width = StartEndButton.Width,
-                Height = _field[0, 0].Height / 2,
+                Height = StartEndButton.Height / 2,
                 BackColor = Color.White,
             };
-            ResetWinsButton.Click += ResetWinsButtonClick;
-            Controls.AddRange(new Control[] { FieldSizeLabel, _fieldWidthInput, _fieldHeightInput, WinsLabel, CurrentTurnLabel, StartEndButton, ResetWinsButton });
+            ResetWinsButton.Click += (object? sender, EventArgs e) => FileManager.ResetWinsFile();
+
+            ImportWinsButton = new Button()
+            {
+                Text = TranslationManager.Translation[TranslationManager.TranslatableText.ImportWinsButton],
+                Location = new Point(ResetWinsButton.Left, ResetWinsButton.Bottom),
+                Width = ResetWinsButton.Width / 2,
+                Height = ResetWinsButton.Height,
+                BackColor = Color.White,
+            };
+            ImportWinsButton.Click += (object? sender, EventArgs e) => FileManager.ImportWinsFile();
+
+            ExportWinsButton = new Button()
+            {
+                Text = TranslationManager.Translation[TranslationManager.TranslatableText.ExportWinsButton],
+                Location = new Point(ImportWinsButton.Right, ResetWinsButton.Bottom),
+                Width = ResetWinsButton.Width / 2,
+                Height = ResetWinsButton.Height,
+                BackColor = Color.White,
+            };
+            ExportWinsButton.Click += (object? sender, EventArgs e) => FileManager.ExportWinsFile();
+
+            Controls.AddRange(new Control[] { FieldSizeLabel, _fieldWidthInput, _fieldHeightInput, WinsLabel, 
+                CurrentTurnLabel, StartEndButton, ResetWinsButton, ImportWinsButton, ExportWinsButton });
             InitializeComponent();
         }
         /// <summary>Creates TTTButtons for the field.</summary>
@@ -237,11 +271,13 @@ namespace TicTacToe
             IsPlaying = true;
             CreateField(new Point(Indent, CurrentTurnLabel.Bottom), _tttButtonPattern, out _createdFieldSize);
             UpdateControlSizes();
-            AlignRestartResetButtons();
+            AlignBottomButtons();
             CreateWinningCombinations();
             _fieldHeightInput.Enabled = false;
             _fieldWidthInput.Enabled = false;
             ResetWinsButton.Enabled = false;
+            ImportWinsButton.Enabled = false;
+            ExportWinsButton.Enabled = false;
             TranslationManager.UpdateWinsLabelText();
             TranslationManager.UpdateCurrentTurnLabelText();
             TranslationManager.UpdateStartEndButtonText();
@@ -251,6 +287,8 @@ namespace TicTacToe
             IsPlaying = false;
             StartEndButton.Enabled = true;
             ResetWinsButton.Enabled = true;
+            ImportWinsButton.Enabled = true;
+            ExportWinsButton.Enabled = true;
             _fieldHeightInput.Enabled = true;
             _fieldWidthInput.Enabled = true;
             TranslationManager.UpdateWinsLabelText();
@@ -262,15 +300,7 @@ namespace TicTacToe
         private void EndGame(List<TTTButton> winningCombination)
         {
             winningCombination.ForEach(b => b.ForeColor = Color.Red);
-            IsPlaying = false;
-            StartEndButton.Enabled = true;
-            ResetWinsButton.Enabled = true;
-            _fieldHeightInput.Enabled = true;
-            _fieldWidthInput.Enabled = true;
-            TranslationManager.UpdateWinsLabelText();
-            FileManager.WriteWinsFile();
-            TranslationManager.UpdateCurrentTurnLabelText();
-            TranslationManager.UpdateStartEndButtonText();
+            EndGame();
         }
         /// <summary>Scales all controls to created field size.</summary>
         private void UpdateControlSizes()
@@ -284,12 +314,16 @@ namespace TicTacToe
             CurrentTurnLabel.Width = WinsLabel.Width;
         }
         /// <summary>Aligns startEnd and reset buttons according to created field size.</summary>
-        private void AlignRestartResetButtons()
+        private void AlignBottomButtons()
         {
             StartEndButton.Location = new Point(_field[0, _field.GetUpperBound(1)].Left, _field[0, _field.GetUpperBound(1)].Bottom);
             StartEndButton.Width = _createdFieldSize.Width;
             ResetWinsButton.Location = new Point(StartEndButton.Left, StartEndButton.Bottom);
             ResetWinsButton.Width = _createdFieldSize.Width;
+            ImportWinsButton.Location = new Point(ResetWinsButton.Left, ResetWinsButton.Bottom);
+            ImportWinsButton.Width = _createdFieldSize.Width / 2;
+            ExportWinsButton.Location = new Point(ImportWinsButton.Right, ResetWinsButton.Bottom);
+            ExportWinsButton.Width = _createdFieldSize.Width / 2;
         }
         /// <summary>Ends the game if playing. Starts the game if not playing.</summary>
         private void EndStartButtonClick(object? sender, EventArgs e)
@@ -307,10 +341,6 @@ namespace TicTacToe
             {
                 StartGame();
             }
-        }
-        private void ResetWinsButtonClick(object? sender, EventArgs e)
-        {
-            FileManager.ResetWinsFile();
         }
         private void FieldWidthInputValueChanged(object? sender, EventArgs e)
         {

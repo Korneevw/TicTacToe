@@ -28,6 +28,14 @@ namespace TicTacToe
             StartEndButtonStart,
             StartEndButtonEnd,
             ResetWinsButton,
+            ImportWinsButton,
+            ExportWinsButton,
+            ReadWinsFailedMessage,
+            ReadWinsFailedHeading,
+            ImportSuccesfulMessage,
+            ImportSuccesfulHeading,
+            ExportSuccesfulMessage,
+            ExportSuccesfulHeading,
             MainFormName,
         }
         public static Dictionary<TranslatableText, string> Translation { get; private set; } = new Dictionary<TranslatableText, string>();
@@ -52,7 +60,8 @@ namespace TicTacToe
             UpdateCurrentTurnLabelText();
             UpdateStartEndButtonText();
             MainForm.ResetWinsButton.Text = Translation[TranslatableText.ResetWinsButton];
-            MainForm.Text = Translation[TranslatableText.MainFormName];
+            MainForm.ImportWinsButton.Text = Translation[TranslatableText.ImportWinsButton];
+            MainForm.ExportWinsButton.Text = Translation[TranslatableText.ExportWinsButton];
         }
         /// <summary>Updates only the WinsLabel's text according to the translation.</summary>
         public static void UpdateWinsLabelText()
